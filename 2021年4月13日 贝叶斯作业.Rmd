@@ -1,3 +1,15 @@
+---
+title: "2021年4月13日 贝叶斯作业"
+author: "tassadar667"
+date: "2021/4/13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
 sgd.lm <- function(X, y, beta.init, alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10) {
   n <- length(y)
   beta.old <- beta.init
@@ -56,12 +68,16 @@ lm.cost.grad <- function(X, y, beta) {
   return()
 }
 
+```
 
-
+给出逻辑回归函数
+```{r}
 sigmoid<-function(x){
   1/(1+exp(-x))
 }
-
+```
+初始化数据
+```{r}
 data=read.csv('iris.csv')
 x=data[,c(1,2,3,4)]
 y=data[,c(6)]
@@ -69,13 +85,17 @@ x=as.matrix(x)
 x=scale(x)
 y=as.matrix(y)
 init_beta=matrix(rnorm(4),ncol = 1)
-
+```
+取样计算
+```{r}
 s=sample(1:150,100)
 s_x=x[s,]
 s_y=y[s,]
 
 res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)
-
+```
+对预测结果进行检验
+```{r}
 yy=sigmoid(x%*%res$result)
 pred=c()
 for (i in yy) {
@@ -93,3 +113,4 @@ for (i in 1:150) {
   }
 }
 cat("准确率为",right/150)
+```
