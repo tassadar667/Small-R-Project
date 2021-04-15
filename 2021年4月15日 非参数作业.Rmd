@@ -1,3 +1,40 @@
+---
+title: "2021年4月15日 非参数作业"
+author: "tassadar667"
+date: "2021/4/15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1
+```{r}
+bootstrap=function(x,p,alpha=0.05,num=1000){
+  n=round(length(x)*0.7)
+  p_seq=c()
+  sd_seq=c()
+  for (i in 1:num) {
+    s=sample(x,n,replace = TRUE)
+    p_seq=c(p_seq,quantile(s,p))
+    sd_seq=c(sd_seq,sd(p_seq))
+  }
+  temp=mean(p_seq)
+  temp1=sd(p_seq)*qnorm(1-alpha/2)
+  return(list(sd=sd(p_seq),p_seq=p_seq,sd_seq=sd_seq,
+              conf=c(temp-temp1,temp+temp1)))
+}
+sample_num=1000
+x=rnorm(100,sd=5)
+ans=bootstrap(x,0.25,num = sample_num)
+plot(1:sample_num,ans$sd_seq)
+print(ans$conf)
+```
+
+# 2
+## 2.1
+```{r}
 x=rnorm(100,mean = 5)
 
 canshu_boot=function(x,num=1000,alpha=0.05){
@@ -40,7 +77,21 @@ ans=canshu_boot(x)
 ans_1=feicanshu_boot(x)
 
 print(ans$conf)
-print(ans_1$conf)
+print(ans$sd)
+print(ans_1$conf,ans_1$sd)
+print(ans_1$sd)
+```
+两者相差不多, 但是参数方法的信息更多，置信区间较小，方差较小
 
+
+```{r}
 hist(ans$theta_seq)
 hist(ans_1$theta_seq)
+
+```
+两者的分布没有显著区别，整体为偏左的正态分布
+
+# 3
+```{r}
+
+```
