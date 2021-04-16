@@ -1,46 +1,20 @@
-x=rnorm(100,mean = 5)
-
-canshu_boot=function(x,num=1000,alpha=0.05){
-  s=sd(x)
-  m=mean(x)
-  theta_seq=c()
-  sd_seq=c()
-  for (i in 1:num) {
-    temp=rnorm(100,mean = m,sd=s)
-    theta=exp(mean(temp))
-    theta_seq=c(theta_seq,theta)
-    sd_seq=c(sd_seq,sd(theta_seq))
+x=c(4.12,5.81,7.63,9.74,10.39,11.92,12.32,12.89,13.54,14.45)
+r=rank(abs(x-8))
+print(r)
+s=c()
+sgn=function(x){
+  if(x>0){
+    return(1)
   }
-  temp=2*mean(theta_seq)
-  low=temp-quantile(theta_seq,1-alpha/2)
-  up=temp-quantile(theta_seq,alpha/2)
-  return(list(sd=sd(theta_seq),theta_seq=theta_seq,
-              sd_seq=sd_seq,
-              conf=c(low,up)))
-}
-
-feicanshu_boot=function(x,num=1000,alpha=0.05){
-  theta_seq=c()
-  sd_seq=c()
-  for (i in 1:num) {
-    temp=sample(x,round(length(x)*0.7),replace = TRUE)
-    theta=exp(mean(temp))
-    theta_seq=c(theta_seq,theta)
-    sd_seq=c(sd_seq,sd(theta_seq))
+  else{
+    return(-1)
   }
-  temp=2*mean(theta_seq)
-  low=temp-quantile(theta_seq,1-alpha/2)
-  up=temp-quantile(theta_seq,alpha/2)
-  return(list(sd=sd(theta_seq),theta_seq=theta_seq,
-              sd_seq=sd_seq,
-              conf=c(low,up)))
 }
-
-ans=canshu_boot(x)
-ans_1=feicanshu_boot(x)
-
-print(ans$conf)
-print(ans_1$conf)
-
-hist(ans$theta_seq)
-hist(ans_1$theta_seq)
+for (i in 1:length(x)) {
+  s=c(s,pnorm((1+r[i])/(length(x))+1))*sgn(x[i]-8)
+}
+print(s)
+t=sum(s)/sum(s^2)
+p=(1-pnorm(t))*2
+cat("t=",t,'\n',sep = '')
+cat('p-value=',p,'\n',sep = '')
