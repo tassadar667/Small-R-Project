@@ -8,7 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+# 利用SGD对鸢尾花种类进行逻辑回归
+SGD函数
 ```{r}
 sgd.lm <- function(X, y, beta.init, alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10) {
   n <- length(y)
@@ -45,7 +46,7 @@ sgd.lm.cost <- function(X, y, beta) {
   if (!is.matrix(X)) {
     X <- matrix(X, nrow = 1)
   }
-  loss <- sum((sigmoid(X %*% beta) - y)^2)/(2 * n)
+  loss <- sum((sig(X %*% beta) - y)^2)/(2 * n)
   return(loss)
 }
 ## Calculate the gradient
@@ -69,18 +70,18 @@ lm.cost.grad <- function(X, y, beta) {
 }
 
 ```
-
 给出逻辑回归函数
 ```{r}
-sigmoid<-function(x){
+sig<-function(x){
   1/(1+exp(-x))
 }
 ```
-初始化数据
+初始化数据,数据为鸢尾花数据集，包含sepal长度宽度，petal长度宽度，预测变量为该花是否为setosa
 ```{r}
 data=read.csv('iris.csv')
+head(data)
 x=data[,c(1,2,3,4)]
-y=data[,c(6)]
+y=data[,5]
 x=as.matrix(x)
 x=scale(x)
 y=as.matrix(y)
@@ -96,21 +97,25 @@ res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter =
 ```
 对预测结果进行检验
 ```{r}
-yy=sigmoid(x%*%res$result)
-pred=c()
+yy=sig(x%*%res$result)
+pred1=c()
 for (i in yy) {
   if(i>=0.5){
-    pred=c(pred,1)
+    pred1=c(pred1,1)
   }
   else{
-    pred=c(pred,0)
+    pred1=c(pred1,0)
   }
 }
 right=0
 for (i in 1:150) {
-  if(pred[i]==y[i]){
+  if(pred1[i]==y[i]){
     right=right+1
   }
 }
 cat("准确率为",right/150)
 ```
+可以看到预测准确率较高，模型表现良好
+
+## 小结
+对于逻辑回归这种较为简单的模型，有着较好的数学性质（可导、单调），随机梯度下降难以体现其优势，但是对于更复杂的模型，随机梯度下降能够较为快的解决问题。

@@ -171,6 +171,9 @@ pre code {
 </div>
 
 
+<div id="利用sgd对鸢尾花种类进行逻辑回归" class="section level1">
+<h1>利用SGD对鸢尾花种类进行逻辑回归</h1>
+<p>SGD函数</p>
 <pre class="r"><code>sgd.lm &lt;- function(X, y, beta.init, alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10) {
   n &lt;- length(y)
   beta.old &lt;- beta.init
@@ -206,7 +209,7 @@ sgd.lm.cost &lt;- function(X, y, beta) {
   if (!is.matrix(X)) {
     X &lt;- matrix(X, nrow = 1)
   }
-  loss &lt;- sum((sigmoid(X %*% beta) - y)^2)/(2 * n)
+  loss &lt;- sum((sig(X %*% beta) - y)^2)/(2 * n)
   return(loss)
 }
 ## Calculate the gradient
@@ -229,13 +232,21 @@ lm.cost.grad &lt;- function(X, y, beta) {
   return()
 }</code></pre>
 <p>给出逻辑回归函数</p>
-<pre class="r"><code>sigmoid&lt;-function(x){
+<pre class="r"><code>sig&lt;-function(x){
   1/(1+exp(-x))
 }</code></pre>
-<p>初始化数据</p>
+<p>初始化数据,数据为鸢尾花数据集，包含sepal长度宽度，petal长度宽度，预测变量为该花是否为setosa</p>
 <pre class="r"><code>data=read.csv(&#39;iris.csv&#39;)
-x=data[,c(1,2,3,4)]
-y=data[,c(6)]
+head(data)</code></pre>
+<pre><code>##   sepal.length sepal.width petal.length petal.width setosa versicolor virginica
+## 1          5.1         3.5          1.4         0.2      1          0         0
+## 2          4.9         3.0          1.4         0.2      1          0         0
+## 3          4.7         3.2          1.3         0.2      1          0         0
+## 4          4.6         3.1          1.5         0.2      1          0         0
+## 5          5.0         3.6          1.4         0.2      1          0         0
+## 6          5.4         3.9          1.7         0.4      1          0         0</code></pre>
+<pre class="r"><code>x=data[,c(1,2,3,4)]
+y=data[,5]
 x=as.matrix(x)
 x=scale(x)
 y=as.matrix(y)
@@ -247,27 +258,33 @@ s_y=y[s,]
 
 res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)</code></pre>
 <pre><code>## Converged. 
-## Iterated  3107  times. 
-## Coefficients:  -0.1175342 -0.1109022 0.3731731 -0.2534115</code></pre>
+## Iterated  78384  times. 
+## Coefficients:  0.07021565 0.05505767 -0.696752 0.1247793</code></pre>
 <p>对预测结果进行检验</p>
-<pre class="r"><code>yy=sigmoid(x%*%res$result)
-pred=c()
+<pre class="r"><code>yy=sig(x%*%res$result)
+pred1=c()
 for (i in yy) {
   if(i&gt;=0.5){
-    pred=c(pred,1)
+    pred1=c(pred1,1)
   }
   else{
-    pred=c(pred,0)
+    pred1=c(pred1,0)
   }
 }
 right=0
 for (i in 1:150) {
-  if(pred[i]==y[i]){
+  if(pred1[i]==y[i]){
     right=right+1
   }
 }
 cat(&quot;准确率为&quot;,right/150)</code></pre>
-<pre><code>## 准确率为 0.66</code></pre>
+<pre><code>## 准确率为 0.9866667</code></pre>
+<p>可以看到预测准确率较高，模型表现良好</p>
+<div id="小结" class="section level2">
+<h2>小结</h2>
+<p>对于逻辑回归这种较为简单的模型，有着较好的数学性质（可导、单调），随机梯度下降难以体现其优势，但是对于更复杂的模型，随机梯度下降能够较为快的解决问题。</p>
+</div>
+</div>
 
 
 

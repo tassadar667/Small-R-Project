@@ -26,9 +26,24 @@ bootstrap=function(x,p,alpha=0.05,num=1000){
               conf=c(temp-temp1,temp+temp1)))
 }
 sample_num=1000
-x=rnorm(100,sd=5)
+x=read.table('nerve.txt',header = FALSE)
+x=as.numeric(x)
 ans=bootstrap(x,0.25,num = sample_num)
 plot(1:sample_num,ans$sd_seq)
+cat("0.25分位数\n")
+print(ans$conf)
+```
+```{r}
+ans=bootstrap(x,0.5,num = sample_num)
+plot(1:sample_num,ans$sd_seq)
+cat("0.5分位数\n")
+print(ans$conf)
+```
+
+```{r}
+ans=bootstrap(x,0.75,num = sample_num)
+plot(1:sample_num,ans$sd_seq)
+cat("0.75分位数\n")
 print(ans$conf)
 ```
 
@@ -89,13 +104,12 @@ hist(ans$theta_seq)
 hist(ans_1$theta_seq)
 
 ```
-两者的分布没有显著区别，整体为偏左的正态分布
+两者的分布没有显著区别，整体为偏右的正态分布
 
 # 3
 ```{r}
 x=c(4.12,5.81,7.63,9.74,10.39,11.92,12.32,12.89,13.54,14.45)
 r=rank(abs(x-8))
-print(r)
 s=c()
 sgn=function(x){
   if(x>0){
@@ -106,13 +120,14 @@ sgn=function(x){
   }
 }
 for (i in 1:length(x)) {
-  s=c(s,pnorm((1+r[i])/(length(x))+1))*sgn(x[i]-8)
+  s=c(s,qnorm(0.5*(1+r[i]/(length(x)+1)))*sgn(x[i]-8))
 }
-print(s)
-t=sum(s)/sum(s^2)
+t=sum(s)/sqrt(sum(s^2))
+lis=list(value=x,rank=r,nscore=s)
 p=(1-pnorm(t))*2
+print(lis)
 cat("t=",t,'\n',sep = '')
 cat('p-value=',p,'\n',sep = '')
 ```
 
-在显著性水平为0.05的前提下，不能否定原假设，即认为中位数为8
+在显著性水平为0.05的前提下，不能否定原假设，即认为中位数为8,但是在显著性水平为0.1的前提下可以拒绝原假设。
