@@ -84,8 +84,9 @@ x=data[,c(1,2,3,4)]
 y=data[,5]
 x=as.matrix(x)
 x=scale(x)
+x=cbind(x,rep(1,150))
 y=as.matrix(y)
-init_beta=matrix(rnorm(4),ncol = 1)
+init_beta=matrix(rnorm(5),ncol = 1)
 ```
 取样计算
 ```{r}
@@ -114,8 +115,81 @@ for (i in 1:150) {
   }
 }
 cat("准确率为",right/150)
+y1=yy
 ```
-可以看到预测准确率较高，模型表现良好
+可以看到预测准确率较低，对比直接逻辑回归结果
+```{r}
+ans=glm.fit(s_x,s_y)
+print(ans$coefficients)
+```
+两者系数较为相似，考虑对三种类型均进行逻辑回归，选择其中可能性最大的输出
+```{r}
+y=data[,6]
+y=as.matrix(y)
+s_y=y[s,]
+init_beta=matrix(rnorm(5),ncol = 1)
+res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)
+```
+```{r}
+yy=sig(x%*%res$result)
+pred1=c()
+for (i in yy) {
+  if(i>=0.5){
+    pred1=c(pred1,1)
+  }
+  else{
+    pred1=c(pred1,0)
+  }
+}
+right=0
+for (i in 1:150) {
+  if(pred1[i]==y[i]){
+    right=right+1
+  }
+}
+cat("准确率为",right/150)
+y2=yy
+```
+
+```{r}
+y=data[,7]
+y=as.matrix(y)
+s_y=y[s,]
+init_beta=matrix(rnorm(5),ncol = 1)
+res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)
+```
+```{r}
+yy=sig(x%*%res$result)
+pred1=c()
+for (i in yy) {
+  if(i>=0.5){
+    pred1=c(pred1,1)
+  }
+  else{
+    pred1=c(pred1,0)
+  }
+}
+right=0
+for (i in 1:150) {
+  if(pred1[i]==y[i]){
+    right=right+1
+  }
+}
+cat("准确率为",right/150)
+y3=yy
+```
+```{r}
+y=data[,c(5,6,7)]
+right=0
+for (i in 1:150) {
+  if(which.max(c(y1[i],y2[i],y3[i]))==which.max(y[i,])){
+    right=right+1
+  }
+  
+}
+cat("准确率为",right/150)
+```
+运行几次的结果差距较大，产生原因在于样本与初始点的选择。
 
 ## 小结
 对于逻辑回归这种较为简单的模型，有着较好的数学性质（可导、单调），随机梯度下降难以体现其优势，但是对于更复杂的模型，随机梯度下降能够较为快的解决问题。
