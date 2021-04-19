@@ -77,6 +77,7 @@ sig<-function(x){
 }
 ```
 初始化数据,数据为鸢尾花数据集，包含sepal长度宽度，petal长度宽度，预测变量为该花是否为setosa
+建立函数为$y=\frac{1}{1+e^{-x}}$，其中$x=\beta_1sepal.length+\beta_2sepal.width+\beta_3petal.length+\beta_4petal.width+\beta_5$
 ```{r}
 data=read.csv('iris.csv')
 head(data)
@@ -189,7 +190,7 @@ for (i in 1:150) {
 }
 cat("准确率为",right/150)
 ```
-运行几次的结果差距较大，产生原因在于样本与初始点的选择。
+运行几次的结果差距较大，产生原因在于样本的选择。
 
 ## 小结
 对于逻辑回归这种较为简单的模型，有着较好的数学性质（可导、单调），随机梯度下降难以体现其优势，但是对于更复杂的模型，随机梯度下降能够较为快的解决问题。

@@ -235,7 +235,7 @@ lm.cost.grad &lt;- function(X, y, beta) {
 <pre class="r"><code>sig&lt;-function(x){
   1/(1+exp(-x))
 }</code></pre>
-<p>初始化数据,数据为鸢尾花数据集，包含sepal长度宽度，petal长度宽度，预测变量为该花是否为setosa</p>
+<p>初始化数据,数据为鸢尾花数据集，包含sepal长度宽度，petal长度宽度，预测变量为该花是否为setosa 建立函数为<span class="math inline">\(y=\frac{1}{1+e^{-x}}\)</span>，其中<span class="math inline">\(x=\beta_1sepal.length+\beta_2sepal.width+\beta_3petal.length+\beta_4petal.width+\beta_5\)</span></p>
 <pre class="r"><code>data=read.csv(&#39;iris.csv&#39;)
 head(data)</code></pre>
 <pre><code>##   sepal.length sepal.width petal.length petal.width setosa versicolor virginica
@@ -259,8 +259,8 @@ s_y=y[s,]
 
 res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)</code></pre>
 <pre><code>## Converged. 
-## Iterated  1879  times. 
-## Coefficients:  0.03131177 0.0864048 -0.3687243 -0.04427074 0.3765641</code></pre>
+## Iterated  16185  times. 
+## Coefficients:  0.1023462 0.09431232 -0.4027244 -0.07812085 0.3408179</code></pre>
 <p>对预测结果进行检验</p>
 <pre class="r"><code>yy=sig(x%*%res$result)
 pred1=c()
@@ -279,13 +279,13 @@ for (i in 1:150) {
   }
 }
 cat(&quot;准确率为&quot;,right/150)</code></pre>
-<pre><code>## 准确率为 0.5466667</code></pre>
+<pre><code>## 准确率为 0.6333333</code></pre>
 <pre class="r"><code>y1=yy</code></pre>
 <p>可以看到预测准确率较低，对比直接逻辑回归结果</p>
 <pre class="r"><code>ans=glm.fit(s_x,s_y)
 print(ans$coefficients)</code></pre>
 <pre><code>## sepal.length  sepal.width petal.length  petal.width              
-##   0.01855830   0.13993439  -0.34972642  -0.05056125   0.32326274</code></pre>
+##   0.08324891   0.10197473  -0.40319435  -0.05370811   0.33872074</code></pre>
 <p>两者系数较为相似，考虑对三种类型均进行逻辑回归，选择其中可能性最大的输出</p>
 <pre class="r"><code>y=data[,6]
 y=as.matrix(y)
@@ -293,8 +293,8 @@ s_y=y[s,]
 init_beta=matrix(rnorm(5),ncol = 1)
 res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)</code></pre>
 <pre><code>## Converged. 
-## Iterated  121979  times. 
-## Coefficients:  0.04398406 -0.2524777 0.1589521 -0.4338932 0.3374354</code></pre>
+## Iterated  97167  times. 
+## Coefficients:  -0.05010208 -0.2070749 0.2793276 -0.2883899 0.2621935</code></pre>
 <pre class="r"><code>yy=sig(x%*%res$result)
 pred1=c()
 for (i in yy) {
@@ -312,7 +312,7 @@ for (i in 1:150) {
   }
 }
 cat(&quot;准确率为&quot;,right/150)</code></pre>
-<pre><code>## 准确率为 0.44</code></pre>
+<pre><code>## 准确率为 0.4733333</code></pre>
 <pre class="r"><code>y2=yy</code></pre>
 <pre class="r"><code>y=data[,7]
 y=as.matrix(y)
@@ -320,8 +320,8 @@ s_y=y[s,]
 init_beta=matrix(rnorm(5),ncol = 1)
 res=sgd.lm(s_x,s_y,init_beta,alpha = 0.05, n.samples = 1, tol = 1e-8, max.iter = 1e10)</code></pre>
 <pre><code>## Converged. 
-## Iterated  40049  times. 
-## Coefficients:  -0.03817166 0.1613015 0.1640284 0.3051957 0.3442337</code></pre>
+## Iterated  16988  times. 
+## Coefficients:  -0.03466861 0.09418625 0.03594509 0.381661 0.2780957</code></pre>
 <pre class="r"><code>yy=sig(x%*%res$result)
 pred1=c()
 for (i in yy) {
@@ -339,7 +339,7 @@ for (i in 1:150) {
   }
 }
 cat(&quot;准确率为&quot;,right/150)</code></pre>
-<pre><code>## 准确率为 0.6</code></pre>
+<pre><code>## 准确率为 0.64</code></pre>
 <pre class="r"><code>y3=yy</code></pre>
 <pre class="r"><code>y=data[,c(5,6,7)]
 right=0
@@ -351,7 +351,11 @@ for (i in 1:150) {
 }
 cat(&quot;准确率为&quot;,right/150)</code></pre>
 <pre><code>## 准确率为 0.8466667</code></pre>
-<p>运行几次的结果差距较大，产生原因在于样本与初始点的选择 ## 小结 对于逻辑回归这种较为简单的模型，有着较好的数学性质（可导、单调），随机梯度下降难以体现其优势，但是对于更复杂的模型，随机梯度下降能够较为快的解决问题。</p>
+<p>运行几次的结果差距较大，产生原因在于样本的选择。</p>
+<div id="小结" class="section level2">
+<h2>小结</h2>
+<p>对于逻辑回归这种较为简单的模型，有着较好的数学性质（可导、单调），随机梯度下降难以体现其优势，但是对于更复杂的模型，随机梯度下降能够较为快的解决问题。</p>
+</div>
 </div>
 
 
