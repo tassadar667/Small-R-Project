@@ -1,0 +1,217 @@
+---
+title: "2021年4月22日 非参数作业"
+author: "tassadar667"
+date: "2021/4/22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1
+## 1.1
+```{r}
+bm.test=function(x,y,q=0.5){
+  xy=c(x,y)
+  mxy=quantile(xy,q)
+  a=sum(x>mxy)
+  m=length(x)
+  n=length(y)
+  t=a+sum(y>mxy)
+  p1=0
+  for (i in 0:a) {
+    p1=p1+p(i,m,n,t)
+  }
+  p1=2*min(p1,1-p1)
+  z1=(a-m*t/(m+n))/sqrt(m*n*t*(m+n-t)/(m+n)^3)
+  p2=2*(1-pnorm(abs(z1)))
+  if(a*(m+n)>m*t){
+    c=-0.5
+  }
+  else{
+    c=0.5
+  }
+  z2=(a+c-m*t/(m+n))/sqrt(m*n*t*(m+n-t)/(m+n)^3)
+  p3=2*(1-pnorm(abs(z2)))
+  ans=list("p-value"=p1,'p-value.nrom'=p2,'p-value.Cnorm'=p3)
+}
+
+p=function(k,m,n,t){
+  choose(m,k)*choose(n,t-k)/choose(m+n,t)
+}
+x=c(698,688,675,656,655,648,640,639,620)
+y=c(780,754,740,712,693,680,621)
+
+ans=bm.test(x,y)
+print(ans)
+```
+三种的P-value均小于0.05，其中修正的正态近似较为接近准确值，未修正的差距较大，在小样本情况下误差较大。
+在$\alpha=0.05$的水平下，认为两者的中位数不相同。
+```{r}
+ans=bm.test(x,y,q=0.25)
+print(ans)
+```
+在$\alpha=0.05$的水平下，认为两者的0.25分位数相同。
+```{r}
+ans=bm.test(x,y,q=0.75)
+print(ans)
+```
+在$\alpha=0.05$的水平下，认为两者的0.75分位数不相同。
+
+## 1.2
+### 1.2.1
+$H_0:B组0.25分位数小于等于A组$
+$H_1:B组0.25分位数大于A组$
+利用BM检验进行假设检验
+修改原函数为单边检验函数
+```{r}
+bm.test=function(x,y,q=0.5,two.side=TRUE){
+  if(two.side==TRUE){
+    index=2
+  }
+  else{
+    index=1
+  }
+  xy=c(x,y)
+  mxy=quantile(xy,q)
+  a=sum(x>mxy)
+  m=length(x)
+  n=length(y)
+  t=a+sum(y>mxy)
+  p1=0
+  for (i in 0:a) {
+    p1=p1+p(i,m,n,t)
+  }
+  p1=index*min(p1,1-p1)
+  z1=(a-m*t/(m+n))/sqrt(m*n*t*(m+n-t)/(m+n)^3)
+  p2=index*(1-pnorm(abs(z1)))
+  if(a*(m+n)>m*t){
+    c=-0.5
+  }
+  else{
+    c=0.5
+  }
+  z2=(a+c-m*t/(m+n))/sqrt(m*n*t*(m+n-t)/(m+n)^3)
+  p3=index*(1-pnorm(abs(z2)))
+  ans=list("p-value"=p1,'p-value.nrom'=p2,'p-value.Cnorm'=p3)
+}
+```
+进行检验
+```{r}
+x=c(10,8,12,16,5,9,7,11,6)
+y=c(12,15,20,18,13,14,9,16)
+ans=bm.test(x,y,q=0.25,two.side = FALSE)
+print(ans)
+```
+在显著性水平为0.05前提下，不能否定原假设“B组0.25分位数小于等于A组”。但是在显著性水平为0.1前提下，可以否定原假设，即认为B组0.25分位数大于A组。
+
+
+
+### 1.2.2
+$H_0:B组0.75分位数小于等于A组$
+$H_1:B组0.75分位数大于A组$
+进行检验
+```{r}
+ans=bm.test(x,y,q=0.75,two.side = FALSE)
+print(ans)
+```
+
+在显著性水平为0.05前提下，不能否定原假设“B组0.75分位数小于等于A组”。
+
+```{r}
+plot(density(x),xlim=c(0,25))
+lines(density(y),lty=2)
+legend("topright",legend = c("A","B"),lty = c(1,2))
+```
+
+**但是根据图像来看，两组数据的0.25和0.75分位数均是B组大于A组，导致检验中无法否定原假设的原因在于样本量过少，可能是发生了偶然事件使得图像中B组的0.25和0.75分位数大于A组。可以通过增大样本量进一步增加准确性。**
+
+# 2
+## 2.1
+$H_0:B组中位数小于等于A组$
+$H_1:B组中位数大于A组$
+## 2.2
+```{r}
+plot(density(x),xlim=c(0,25))
+lines(density(y),lty=2)
+legend("topright",legend = c("A","B"),lty = c(1,2))
+```
+
+##2.3
+利用BM进行中位数检验
+
+#2.4
+```{r}
+ans=bm.test(x,y,q=0.5,two.side = FALSE)
+print(ans)
+```
+
+在显著性水平为0.05前提下否定原假设，即认为B组中位数大于A组，即使用毒品后攻击性更强。
+
+## 2.5
+证据充分，只有0.013的概率是偶然因素导致B组中位数大于A组。
+
+# 3
+**One-sample Wilcoxon signed rank test**
+A Wilcoxon signed-rank test is a nonparametric test that can be used to determine whether two dependent samples were selected from populations having *the same distribution*.
+* 要求样本对称
+* 研究的是对称分布的对称中心
+**Wilcoxon rank sum test**
+* 不要求对称
+* 两样本具有相似分布
+* 比较的是两样本的位置参数
+**Wilcoxon signed rank test on paired samples**
+* 要求样本对称
+* 检验的是两样本是否具有相同的中位数（对称中心）
+**Wilcoxon test assumptions**
+Wilcoxon signed rank要求样本对称，而Wilcoxon rank sum test不要求对称
+The Mann–Whitney U test / Wilcoxon rank-sum test is not the same as the Wilcoxon signed-rank test, although both are nonparametric and involve summation of ranks. The Mann–Whitney U test is applied to independent samples. The Wilcoxon signed-rank test is applied to matched or dependent samples.
+
+## a
+检验的是中位数，故采用One-sample Wilcoxon signed rank test
+$H_0:$小鼠体重均值为25g
+$H_1:$小鼠体重均值不为25g
+```{r}
+library(datarium)
+wilcox.test(mice$weight-25)
+```
+在显著性水平为0.05情况下，拒绝原假设，即认为小鼠的体重中位数不为25。
+
+## b
+```{r}
+male=genderweight$group=='M'
+male=genderweight$weight[male]
+female=genderweight$group=='F'
+female=genderweight$weight[female]
+plot(density(male),xlim=c(50,100))
+lines(density(female),lty=2)
+legend("topright",legend = c("male","female"),lty = c(1,2))
+```
+
+
+两者具有相似分布，比较的是均值即位置参数，采用Wilcoxon rank sum test
+
+$H_0:$男性体重平均水平小于等于女性
+$H_1:$男性体重平均水平大于女性
+```{r}
+wilcox.test(male,female,alternative = 'greater')
+```
+在显著性水平为0.05情况下，拒绝原假设，认为男性体重平均水平大于女性。
+
+## c
+```{r}
+x=mice2$before
+y=mice2$after
+plot(density(x),xlim=c(100,500))
+lines(density(y),lty=2)
+legend("topright",legend = c("before","after"),lty = c(1,2))
+```
+由于样本是配对数据，采用Wilcoxon signed rank test on paired samples
+$H_0:$小鼠体重无显著上升
+$H_1:$小鼠体重有显著上升
+```{r}
+wilcox.test(x,y,paired = TRUE,alternative = 'less')
+```
+
+在显著性水平为0.05情况下，拒绝原假设，认为小鼠体重有显著上升。
