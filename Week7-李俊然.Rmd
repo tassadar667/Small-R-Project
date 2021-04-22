@@ -61,10 +61,14 @@ print(ans)
 
 ## 1.2
 ### 1.2.1
-$H_0:B组0.25分位数小于等于A组$
-$H_1:B组0.25分位数大于A组$
+$H_0:$B组0.25分位数小于等于A组
+
+$H_1:$B组0.25分位数大于A组
+
 利用BM检验进行假设检验
+
 修改原函数为单边检验函数
+
 ```{r}
 bm.test=function(x,y,q=0.5,two.side=TRUE){
   if(two.side==TRUE){
@@ -97,7 +101,9 @@ bm.test=function(x,y,q=0.5,two.side=TRUE){
   ans=list("p-value"=p1,'p-value.nrom'=p2,'p-value.Cnorm'=p3)
 }
 ```
+
 进行检验
+
 ```{r}
 x=c(10,8,12,16,5,9,7,11,6)
 y=c(12,15,20,18,13,14,9,16)
@@ -109,9 +115,13 @@ print(ans)
 
 
 ### 1.2.2
+
 $H_0:B组0.75分位数小于等于A组$
+
 $H_1:B组0.75分位数大于A组$
+
 进行检验
+
 ```{r}
 ans=bm.test(x,y,q=0.75,two.side = FALSE)
 print(ans)
@@ -129,8 +139,11 @@ legend("topright",legend = c("A","B"),lty = c(1,2))
 
 # 2
 ## 2.1
+
 $H_0:B组中位数小于等于A组$
+
 $H_1:B组中位数大于A组$
+
 ## 2.2
 ```{r}
 plot(density(x),xlim=c(0,25))
@@ -138,10 +151,12 @@ lines(density(y),lty=2)
 legend("topright",legend = c("A","B"),lty = c(1,2))
 ```
 
-##2.3
+
+## 2.3
+
 利用BM进行中位数检验
 
-#2.4
+# 2.4
 ```{r}
 ans=bm.test(x,y,q=0.5,two.side = FALSE)
 print(ans)
@@ -153,29 +168,43 @@ print(ans)
 证据充分，只有0.013的概率是偶然因素导致B组中位数大于A组。
 
 # 3
+
 **One-sample Wilcoxon signed rank test**
+
 A Wilcoxon signed-rank test is a nonparametric test that can be used to determine whether two dependent samples were selected from populations having *the same distribution*.
+
 * 要求样本对称
 * 研究的是对称分布的对称中心
+
 **Wilcoxon rank sum test**
+
 * 不要求对称
 * 两样本具有相似分布
 * 比较的是两样本的位置参数
+
 **Wilcoxon signed rank test on paired samples**
+
 * 要求样本对称
 * 检验的是两样本是否具有相同的中位数（对称中心）
+
 **Wilcoxon test assumptions**
+
 Wilcoxon signed rank要求样本对称，而Wilcoxon rank sum test不要求对称
+
 The Mann–Whitney U test / Wilcoxon rank-sum test is not the same as the Wilcoxon signed-rank test, although both are nonparametric and involve summation of ranks. The Mann–Whitney U test is applied to independent samples. The Wilcoxon signed-rank test is applied to matched or dependent samples.
 
 ## a
 检验的是中位数，故采用One-sample Wilcoxon signed rank test
+
 $H_0:$小鼠体重均值为25g
+
 $H_1:$小鼠体重均值不为25g
+
 ```{r}
 library(datarium)
 wilcox.test(mice$weight-25)
 ```
+
 在显著性水平为0.05情况下，拒绝原假设，即认为小鼠的体重中位数不为25。
 
 ## b
@@ -193,7 +222,9 @@ legend("topright",legend = c("male","female"),lty = c(1,2))
 两者具有相似分布，比较的是均值即位置参数，采用Wilcoxon rank sum test
 
 $H_0:$男性体重平均水平小于等于女性
+
 $H_1:$男性体重平均水平大于女性
+
 ```{r}
 wilcox.test(male,female,alternative = 'greater')
 ```
@@ -207,9 +238,14 @@ plot(density(x),xlim=c(100,500))
 lines(density(y),lty=2)
 legend("topright",legend = c("before","after"),lty = c(1,2))
 ```
+
+
 由于样本是配对数据，采用Wilcoxon signed rank test on paired samples
+
 $H_0:$小鼠体重无显著上升
+
 $H_1:$小鼠体重有显著上升
+
 ```{r}
 wilcox.test(x,y,paired = TRUE,alternative = 'less')
 ```
