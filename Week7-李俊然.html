@@ -172,7 +172,8 @@ pre code {
 
 
 <div id="section" class="section level1">
-<h1>1</h1>
+<h1><strong>1</strong></h1>
+<hr />
 <div id="section-1" class="section level2">
 <h2>1.1</h2>
 <pre class="r"><code>bm.test=function(x,y,q=0.5){
@@ -295,8 +296,8 @@ print(ans)</code></pre>
 </div>
 <div id="section-4" class="section level3">
 <h3>1.2.2</h3>
-<p><span class="math inline">\(H_0:B组0.75分位数小于等于A组\)</span></p>
-<p><span class="math inline">\(H_1:B组0.75分位数大于A组\)</span></p>
+<p><span class="math inline">\(H_0:\)</span>B组0.75分位数小于等于A组</p>
+<p><span class="math inline">\(H_1:\)</span>B组0.75分位数大于A组</p>
 <p>进行检验</p>
 <pre class="r"><code>ans=bm.test(x,y,q=0.75,two.side = FALSE)
 print(ans)</code></pre>
@@ -318,11 +319,12 @@ legend(&quot;topright&quot;,legend = c(&quot;A&quot;,&quot;B&quot;),lty = c(1,2)
 </div>
 </div>
 <div id="section-5" class="section level1">
-<h1>2</h1>
+<h1><strong>2</strong></h1>
+<hr />
 <div id="section-6" class="section level2">
 <h2>2.1</h2>
-<p><span class="math inline">\(H_0:B组中位数小于等于A组\)</span></p>
-<p><span class="math inline">\(H_1:B组中位数大于A组\)</span></p>
+<p><span class="math inline">\(H_0:\)</span>B组中位数小于等于A组</p>
+<p><span class="math inline">\(H_1:\)</span>B组中位数大于A组</p>
 </div>
 <div id="section-7" class="section level2">
 <h2>2.2</h2>
@@ -335,9 +337,8 @@ legend(&quot;topright&quot;,legend = c(&quot;A&quot;,&quot;B&quot;),lty = c(1,2)
 <h2>2.3</h2>
 <p>利用BM进行中位数检验</p>
 </div>
-</div>
-<div id="section-9" class="section level1">
-<h1>2.4</h1>
+<div id="section-9" class="section level2">
+<h2>2.4</h2>
 <pre class="r"><code>ans=bm.test(x,y,q=0.5,two.side = FALSE)
 print(ans)</code></pre>
 <pre><code>## $`p-value`
@@ -349,13 +350,15 @@ print(ans)</code></pre>
 ## $`p-value.Cnorm`
 ## [1] 0.01470627</code></pre>
 <p>在显著性水平为0.05前提下否定原假设，即认为B组中位数大于A组，即使用毒品后攻击性更强。</p>
+</div>
 <div id="section-10" class="section level2">
 <h2>2.5</h2>
 <p>证据充分，只有0.013的概率是偶然因素导致B组中位数大于A组。</p>
 </div>
 </div>
 <div id="section-11" class="section level1">
-<h1>3</h1>
+<h1><strong>3</strong></h1>
+<hr />
 <p><strong>One-sample Wilcoxon signed rank test</strong></p>
 <p>A Wilcoxon signed-rank test is a nonparametric test that can be used to determine whether two dependent samples were selected from populations having <em>the same distribution</em>.</p>
 <ul>
@@ -364,6 +367,8 @@ print(ans)</code></pre>
 </ul>
 <p><strong>Wilcoxon rank sum test</strong></p>
 <ul>
+<li>相互独立</li>
+<li>要求顺序数据</li>
 <li>不要求对称</li>
 <li>两样本具有相似分布</li>
 <li>比较的是两样本的位置参数</li>
@@ -375,7 +380,7 @@ print(ans)</code></pre>
 </ul>
 <p><strong>Wilcoxon test assumptions</strong></p>
 <p>Wilcoxon signed rank要求样本对称，而Wilcoxon rank sum test不要求对称</p>
-<p>The Mann–Whitney U test / Wilcoxon rank-sum test is not the same as the Wilcoxon signed-rank test, although both are nonparametric and involve summation of ranks. The Mann–Whitney U test is applied to independent samples. The Wilcoxon signed-rank test is applied to matched or dependent samples.</p>
+<p>The Mann–Whitney U test / Wilcoxon rank-sum test is not the same as the Wilcoxon signed-rank test, although both are nonparametric and involve summation of ranks. The Mann–Whitney U test is applied to <strong>independent samples</strong>. The Wilcoxon signed-rank test is applied to <strong>matched or dependent samples</strong>.</p>
 <div id="a" class="section level2">
 <h2>a</h2>
 <p>检验的是中位数，故采用One-sample Wilcoxon signed rank test</p>
