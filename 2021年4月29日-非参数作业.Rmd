@@ -1,0 +1,173 @@
+---
+title: "2021年4月29日 非参数作业"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1
+---
+
+```{r}
+a=c(8.8,8.2,5.6,4.9,8.9,4.2,3.6,7.1,5.5,8.6,6.3,3.9)
+b=c(13,14.5,16.5,22.8,20.7,19.6,18.4,21.3,24.2,19.6,11.7,18.9,14.6,19.8,14.5)
+wilcox.test(a,b)
+```
+两组的位置参数并不相同，因此使用Mood方法检验结果并不合理
+
+```{r}
+mood.test(a,b)
+```
+Mood检验没有否定原假设,但是由于两组的位置参数并不相同，检验结果并不可靠
+
+```{r}
+varrank=function(x,y,nx=3,ny=3){
+  n_x=length(x)%/%nx
+  n_y=length(y)%/%ny
+  x=sample(x,length(x))
+  y=sample(y,length(y))
+  x_var=c()
+  y_var=c()
+  for (i in 1:n_x) {
+    temp=x[((i-1)*nx+1):(i*nx)]
+    x_var=c(x_var,var(temp))
+  }
+  for (i in 1:n_y) {
+    temp=y[((i-1)*ny+1):(i*ny)]
+    y_var=c(y_var,var(temp))
+  }
+  ans=list(n_x=n_x,n_y=n_y,x_var=x_var,y_var=y_var)
+  return(ans)
+}
+
+ans=varrank(a,b)
+wilcox.test(ans$x_var,ans$y_var)
+
+ans=varrank(a,b)
+wilcox.test(ans$x_var,ans$y_var)
+
+ans=varrank(a,b)
+wilcox.test(ans$x_var,ans$y_var)
+```
+可以看到，随着每次的分组不同，结果差异极大
+
+#2
+
+---
+
+## 2.1
+![4.1证明]()
+
+## 2.2
+```{r}
+a=c(83,64,67,62,70)
+b=c(85,81,80,78)
+c=c(88,89,79,90,95)
+
+n=sort(c(a,b,c))
+r_a=c()
+for (i in a) {
+  r_a=c(r_a,which(n==i))
+}
+r_b=c()
+for (i in b) {
+  r_b=c(r_b,which(n==i))
+}
+r_c=c()
+for (i in c) {
+  r_c=c(r_c,which(n==i))
+}
+cat("a:",r_a,'\n')
+cat("b:",r_b,'\n')
+cat("c:",r_c,'\n')
+
+sst=length(a)*(mean(r_a)-(length(x)+1)/2)^2+
+  length(b)*(mean(r_b)-(length(x)+1)/2)^2+
+  length(c)*(mean(r_c)-(length(x)+1)/2)^2
+
+cat("sst=",sst,'\n')
+mst=length(x)*(length(x)+1)/12
+cat("mst=",mst,'\n')
+H=sst/mst
+cat("H=",H,'\n')
+cat(qchisq(0.95,3-1))
+```
+$H=40.36>\chi^2_{1-0.05}(3-1)=5.99$
+
+因此拒绝原假设，认为三组数据存在差别
+
+# 3
+
+---
+
+## 3.1
+
+```{r}
+dunn=function(x,alpha=0.05){
+  cat("alpha=",alpha,'\n')
+  n=c()
+  for (i in 1:length(x)) {
+    n=c(n,unlist(x[i]))
+  }
+  n=sort(n)
+  len=length(n)
+  r_x=list()
+  for (i in 1:length(x)) {
+    temp=c()
+    for (j in unlist(x[i])) {
+      temp=c(temp,which(n==j)[1])
+    }
+    r_x=append(r_x,list(temp))
+  }
+  for (i in 1:(length(x)-1)){
+    for (j in (i+1):length(x)){
+      a=unlist(r_x[i])
+      b=unlist(r_x[j])
+      seij=sqrt(len*(len+1)/12*(1/length(a)+1/length(b)))
+      dij=abs(mean(a)-mean(b))/seij
+      z=qnorm(1-alpha)
+      if(dij<z){
+        cat(i,'-',j,'  SE=',seij,'  dij=',dij,'   z=',z,'\n',sep = '')
+      }
+      else{
+        cat(i,'-',j,'  SE=',seij,'  dij=',dij,'*  z=',z,'\n',sep = '')
+      }
+    }
+  }
+}
+x=list(c(3.7,3.7,3.0,3.9,2.7),c(7.3,5.2,5.3,5.7,6.5),c(9.0,4.9,7.1,8.7))
+dunn(x)
+```
+
+认为1、2组，1、3组之间存在差别
+
+## 3.2
+
+```{r}
+x=read.table('employee.txt',header = TRUE)
+kruskal.test(x$salary,x$educ)
+```
+
+在$\alpha=0.05$前提下，拒绝原假设，认为不同教育水平会影响工资水平
+
+### 非参数方法
+
+```{r}
+edu=unique(x$educ)
+y=list()
+for (i in edu) {
+  y=c(y,list(c(x$salary[x$educ==i])))
+}
+dunn(y)
+cat(edu)
+```
+12 8 15 16 17 18 19分别为1、2、3、4、5、6、7组，dunn检验结果表示有*的组存在显著差异
+
+### 参数方法
+
+```{r}
+pairwise.t.test(x$salary,x$educ)
+```
+
