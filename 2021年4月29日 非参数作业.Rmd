@@ -3,7 +3,7 @@ title: "2021年4月29日 非参数作业"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE,cache = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -53,14 +53,19 @@ wilcox.test(ans$x_var,ans$y_var)
 ```
 可以看到，随着每次的分组不同，结果差异极大
 
-#2
+
+# 2
+
 
 ---
 
 ## 2.1
-![4.1证明]()
+
+![4.1证明](pic\1.png)
+
 
 ## 2.2
+
 ```{r}
 a=c(83,64,67,62,70)
 b=c(85,81,80,78)
@@ -83,18 +88,21 @@ cat("a:",r_a,'\n')
 cat("b:",r_b,'\n')
 cat("c:",r_c,'\n')
 
-sst=length(a)*(mean(r_a)-(length(x)+1)/2)^2+
-  length(b)*(mean(r_b)-(length(x)+1)/2)^2+
-  length(c)*(mean(r_c)-(length(x)+1)/2)^2
+sst=length(a)*(mean(r_a)-(length(n)+1)/2)^2+
+  length(b)*(mean(r_b)-(length(n)+1)/2)^2+
+  length(c)*(mean(r_c)-(length(n)+1)/2)^2
 
 cat("sst=",sst,'\n')
-mst=length(x)*(length(x)+1)/12
+mst=length(n)*(length(n)+1)/12
 cat("mst=",mst,'\n')
 H=sst/mst
 cat("H=",H,'\n')
 cat(qchisq(0.95,3-1))
+
 ```
-$H=40.36>\chi^2_{1-0.05}(3-1)=5.99$
+
+
+$H=7.82>\chi^2_{1-0.05}(3-1)=5.99$
 
 因此拒绝原假设，认为三组数据存在差别
 
