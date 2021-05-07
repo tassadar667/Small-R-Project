@@ -214,14 +214,6 @@ wilcox.test(ans$x_var,ans$y_var)</code></pre>
 ##  Wilcoxon rank sum exact test
 ## 
 ## data:  ans$x_var and ans$y_var
-## W = 0, p-value = 0.01587
-## alternative hypothesis: true location shift is not equal to 0</code></pre>
-<pre class="r"><code>ans=varrank(a,b)
-wilcox.test(ans$x_var,ans$y_var)</code></pre>
-<pre><code>## 
-##  Wilcoxon rank sum exact test
-## 
-## data:  ans$x_var and ans$y_var
 ## W = 4, p-value = 0.1905
 ## alternative hypothesis: true location shift is not equal to 0</code></pre>
 <pre class="r"><code>ans=varrank(a,b)
@@ -230,7 +222,15 @@ wilcox.test(ans$x_var,ans$y_var)</code></pre>
 ##  Wilcoxon rank sum exact test
 ## 
 ## data:  ans$x_var and ans$y_var
-## W = 1, p-value = 0.03175
+## W = 3, p-value = 0.1111
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<pre class="r"><code>ans=varrank(a,b)
+wilcox.test(ans$x_var,ans$y_var)</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum exact test
+## 
+## data:  ans$x_var and ans$y_var
+## W = 4, p-value = 0.1905
 ## alternative hypothesis: true location shift is not equal to 0</code></pre>
 <p>可以看到，随着每次的分组不同，结果差异极大</p>
 </div>
