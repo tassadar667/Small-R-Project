@@ -1,0 +1,30 @@
+---
+title: "2021年5月17日 贝叶斯作业"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# lab10
+```{r}
+x=seq(-10,10,0.1)
+norm_y=dnorm(x)
+logi_y=exp(-x)/(1+exp(-x))^2
+cauc_y=1/3.1415926/(1+x^2)
+stud_y=dt(x,5)
+norm1_y=dnorm(x,1,2)
+```
+
+```{r}
+library(ggplot2)
+df=data.table(x=x,norm01=norm_y,logistic=logi_y,cauchy=cauc_y,
+              student5=stud_y,norm12=norm1_y)
+df=melt(df,id="x")
+p=ggplot(df,aes(x=x,y=value,group=variable,color=variable))+
+  geom_line()
+p
+```
+
+
