@@ -32,7 +32,11 @@ p
 
 下面依次进行拒绝抽样
 
-### t分布
+
+
+## *t分布*
+
+---
 
 ```{r}
 g=function(x){
@@ -57,15 +61,40 @@ reject_sample=function(n=1000){
   m=1/optimize(h, c(-10, 10), tol = 0.000001)$objective
   temp=f(g_sam)/(m*g(g_sam))
   target_sample=g_sam[u<=temp]
+  u1=u[u<=temp]
   #print(head(temp))
   list(accept_rate=1/m,target_sample=target_sample,
        real_accept_rate=length(target_sample)/n,
-       g_sample=g_sam,u=u)
+       g_sample=g_sam,u=u,m=m,u1=u1)
 }
 
 temp=reject_sample(1000)
 f_sample=density(temp$target_sample)
+library(ggplot2)
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")
+  
+  
+print(p)
+```
 
+图中红色曲线为$m*g(x)$，灰色的点在红色曲线围成的范围内均匀分布，其对应的x坐标为从G（x）中抽样的样本
+
+```{r}
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  geom_point(aes(temp$target_sample,temp$m*temp$u1*g(temp$target_sample)),alpha=0.7,colour="green")
+  
+print(p)
+
+```
+
+经过拒绝抽样，绿色的点保留了下来，其对应的x坐标为要求的分布的样本，可以看到其恰好基本在目标分布的密度函数围成的图形中均匀分布。
+
+
+```{r}
 p=ggplot()+geom_line(aes(x=f_sample$x,y=f_sample$y),colour="red")+
   geom_line(aes(x=x,norm_y),alpha=0.8)
 print(p)
@@ -75,7 +104,9 @@ cat("theoretical accept rate:",temp$accept_rate,'\n',
 
 红色曲线是通过拒绝抽样得到的密度曲线，黑色的为理论密度曲线，可以看到两者相似程度较高，可以说拒绝抽样效果较好。
 
-### 柯西分布
+## 柯西分布
+
+---
 
 ```{r}
 g=function(x){
@@ -94,8 +125,26 @@ cat("theoretical accept rate:",temp$accept_rate,'\n',
     'real accept rate:',temp$real_accept_rate,sep = '')
 ```
 
+```{r}
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  xlim(-10,10)
+print(p)
 
-### 逻辑分布
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  geom_point(aes(temp$target_sample,temp$m*temp$u1*g(temp$target_sample)),alpha=0.7,colour="green")+
+  xlim(-10,10)
+print(p)
+```
+
+ps:部分点超出了-10到10范围未画出
+
+## *逻辑分布*
+
+---
 
 ```{r}
 g=function(x){
@@ -114,6 +163,24 @@ cat("theoretical accept rate:",temp$accept_rate,'\n',
     'real accept rate:',temp$real_accept_rate,sep = '')
 ```
 
+```{r}
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  xlim(-10,10)
+print(p)
+
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  geom_point(aes(temp$target_sample,temp$m*temp$u1*g(temp$target_sample)),alpha=0.7,colour="green")+
+  xlim(-10,10)
+print(p)
+```
+
+## *正态分布N（1，2）*
+
+---
 
 ```{r}
 g=function(x){
@@ -132,3 +199,23 @@ cat("theoretical accept rate:",temp$accept_rate,'\n',
     'real accept rate:',temp$real_accept_rate,sep = '')
 ```
 
+```{r}
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  xlim(-10,10)
+print(p)
+
+p=ggplot()+geom_line(aes(x,temp$m*g(x)),colour="red")+
+  geom_line(aes(x=x,norm_y))+
+  geom_point(aes(temp$g_sample,temp$m*temp$u*g(temp$g_sample)),alpha=0.3,colour="grey")+
+  geom_point(aes(temp$target_sample,temp$m*temp$u1*g(temp$target_sample)),alpha=0.7,colour="green")+
+  xlim(-10,10)
+print(p)
+```
+
+## *总结*
+
+---
+
+可以看到，采用不同的分布进行拒绝抽样均取得了较好的效果，但是不同的分布拒绝率存在较大差别，实际应用中应选择接受率大的，这样效率更高。
