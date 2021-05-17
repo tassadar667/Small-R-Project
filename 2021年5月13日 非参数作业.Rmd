@@ -45,7 +45,9 @@ ans=ridit.test(x)
 ```
 
 使用Ridit检验法
+
 $H_0:$各项满意度没有差异
+
 $H_1:$各项满意度之间存在差异
 
 ```{r}
@@ -83,12 +85,14 @@ outlook_male=rbind(table(c01,d1=="male")[,2],
                    table(c05,d1=="male")[,2])
 ```
 
+
 按照性别进行分类
 
 ```{r}
 (female_ans=ridit.test(outlook_female))
 (male_ans=ridit.test(outlook_male))
 ```
+
 男女性都对外观的不同方面重视程度不同
 
 ```{r}
@@ -172,4 +176,5 @@ pplot(profession_ans$Ri,xlab="profession")
 ```
 
 两者没有出现显著差别，总的来说专业用途的人组件差距略小，造成原因可能是他们本身对相机功能参数较为了解，认为这些都是相机基本都有的功能。
+
 总体上，人们较为在意操作的便利性，连拍性能，任意拍摄角度。
