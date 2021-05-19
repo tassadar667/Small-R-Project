@@ -1,6 +1,14 @@
 ---
 title: "2021年5月13日 非参数作业"
-output: html_document
+author:
+  - tassadar667
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+geometry: "left=2.5cm,right=2cm,top=3cm,bottom=2.5cm"
 ---
 
 ```{r setup, include=FALSE,warning=FALSE}
@@ -10,16 +18,22 @@ knitr::opts_chunk$set(echo = TRUE)
 # 1
 ```{r}
 library(data.table)
-ridit.test=function(x){
+ridit.test=function(x,group="sum"){
   m=ncol(x)
   n=nrow(x)
   row_sum=rowSums(x)
   col_sum=colSums(x)
-  temp=col_sum/2
-  ac=c(0,cumsum(col_sum)[1:(m-1)])
+  if(group=="sum"){
+    temp0=col_sum
+  }
+  else{
+    temp0=x[group,]
+  }
+  temp=temp0/2
+  ac=c(0,cumsum(temp0)[1:(m-1)])
   temp1=temp+ac
-  r=temp1/sum(x)
-  p=data.table("case"=col_sum,"case/2"=temp,"ac"=ac,"sum23"=temp1,"r"=r,"sum"=r*col_sum)
+  r=temp1/sum(temp0)
+  p=data.table("case"=temp0,"case/2"=temp,"ac"=ac,"sum23"=temp1,"r"=r,"sum"=r*temp0)
   ri=c()
   for (i in 1:n) {
     ri=c(ri,sum(r*x[i,])/sum(x[i,]))

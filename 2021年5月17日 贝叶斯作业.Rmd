@@ -1,6 +1,14 @@
 ---
 title: "2021年5月17日 贝叶斯作业"
-output: html_document
+author:
+  - tassadar667
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+geometry: "left=2.5cm,right=2cm,top=3cm,bottom=2.5cm"
 ---
 
 ```{r setup, include=FALSE}
