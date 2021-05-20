@@ -27,6 +27,8 @@ options(device = function(file, width = 7, height = 7, ...) {
 
 ## 参数估计的优化方法
 
+使用单纯形法或内点法进行求解
+
 ## 分位回归的优点
 
 -   对随机误差项没有具体分布的假定
@@ -38,6 +40,63 @@ options(device = function(file, width = 7, height = 7, ...) {
 ```{r}
 x=read.table("./data/infant-birthweight.txt",header = TRUE)
 ```
+
+观察数据，发现一些变量意义不明，并且把所有变量进行回归会导致出现奇异矩阵，所以选择了一小部分变量进行回归。
+
+```{r}
+library(quantreg)
+df=read.table("./data/infant-birthweight.txt",header = TRUE)
+y=df$weight
+x=df[c(4,5,6,16)]
+x=as.matrix(x)
+lad=rq(y~x)
+summary(lad)
+```
+尝试进行多个分位数的回归，比较不同分位数下各变量回归系数。
+
+```{r,,fig.showtext=TRUE}
+ans=c()
+for (i in seq(0.1,0.9,0.1)) {
+  temp=rq(y~x,tau=i)
+  ans=rbind(ans,temp$coefficients)
+}
+ans=cbind(ans,"x"=seq(0.1,0.9,0.1))
+library(ggplot2)
+library(data.table)
+ans=data.table(ans)
+colnames(ans)=c("常数","黑人=1","已婚=1","男孩=1","母亲吸烟=1","分位数")
+ans=melt(ans,id="分位数")
+p=ggplot(ans,aes(分位数,y=value,group=variable,color=variable))+
+  geom_line()
+p
+```
+变量含义为自行解读，不一定准确
+
+可以看到常数项的分位数回归系数呈现上升状态，说明还有一些其他因素影响着新生儿体重水平
+
+常数项较大影响了其他变量系数可视化，尝试去掉常数项绘图
+
+```{r,,fig.showtext=TRUE}
+ans=c()
+for (i in seq(0.1,0.9,0.1)) {
+  temp=rq(y~x,tau=i)
+  ans=rbind(ans,temp$coefficients[-1])
+}
+ans=cbind(ans,"x"=seq(0.1,0.9,0.1))
+library(ggplot2)
+library(data.table)
+ans=data.table(ans)
+colnames(ans)=c("黑人=1","已婚=1","男孩=1","母亲吸烟=1","分位数")
+ans=melt(ans,id="分位数")
+p=ggplot(ans,aes(分位数,y=value,group=variable,color=variable))+
+  geom_line()
+p
+```
+
+可以看到，在新生儿体重偏低的时候，此时黑人与母亲吸烟这两个因素可能会更多的导致新生儿体重偏低。
+
+其余变量没有较大区别
+
 
 # 案例3
 
