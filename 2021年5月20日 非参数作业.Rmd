@@ -58,8 +58,9 @@ ans=cbind(ans,"x"=seq(0.1,0.9,0.1))
 library(ggplot2)
 library(data.table)
 ans=data.table(ans)
-ans=melt(ans,id="x")
-p=ggplot(ans,aes(x=x,y=value,group=variable,color=variable))+
+colnames(ans)=c("常数","受教育年限","IQ","工龄","工作成绩","南方=1","大城市=1","分位数")
+ans=melt(ans,id="分位数")
+p=ggplot(ans,aes(x=分位数,y=value,group=variable,color=variable))+
   geom_line()
 p
 ```
