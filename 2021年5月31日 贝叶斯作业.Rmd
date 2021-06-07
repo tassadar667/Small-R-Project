@@ -1,13 +1,23 @@
 ---
 title: "2021年5月31日 贝叶斯作业"
-author: "tassadar667"
-date: "2021/5/31"
-output: html_document
+author:
+  - tassadar667
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+geometry: "left=2.5cm,right=2cm,top=3cm,bottom=2.5cm"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 ```
+
+# 使用Gibbs抽样的贝叶斯多元线性回归
+
+## 对于模拟数据研究
 
 ```{r}
 n <- 1000
@@ -18,6 +28,20 @@ X <- cbind(1, matrix(runif(n * p), n))
 y <- X %*% beta + epsilon
 
 library(mvtnorm)
+
+nIter <- 5000
+p <- ncol(X)
+
+## Reserve space
+beta <- matrix(NA, nIter, p)
+sigma2 <- matrix(NA, nIter, 1)
+acc <- matrix(NA, nIter, 2)
+
+## Initial values
+beta[1, ] <- c(-2, 3, 4, 1)
+sigma2[1, ] <- 0.5
+
+
 LogPosterior <- function(beta, sigma2, y, X) {
   p <- length(beta)
   ## The log likelihood function
@@ -31,7 +55,475 @@ LogPosterior <- function(beta, sigma2, y, X) {
   return(LogPosterior)
 }
 
+for (i in 1:(nIter-1)) {
+  beta_old=beta[i,]
+  sigma2_old=sigma2[i,]
+  
+  p_beta_old=LogPosterior(beta_old,sigma2_old,y,X)
+  
+  beta_prob=rmvnorm(1,matrix(beta_old,1),diag(p))
+  p_beta_prob=LogPosterior(t(beta_prob),sigma2_old,y,X)
+  
+  temp=min(exp(p_beta_prob-p_beta_old),1)
+  
+  if(!is.na(temp)){
+    if(runif(1)<temp){
+      beta_old=beta_prob
+    }
+  }
+  beta[i+1,]=beta_old
+  beta_old=matrix(beta_old)
+  
+  p_sigma2_old=LogPosterior(beta_old,sigma2_old,y,X)
+  sigma2_prob=rnorm(1,sigma2_old,1)
+  p_sigma2_prob=LogPosterior(beta_old,sigma2_prob,y,X)
+  temp=min(exp(p_sigma2_prob-p_sigma2_old),1)
+  if(!is.na(temp)){
+    if(runif(1, 0, 1)<temp){
+      sigma2_old=sigma2_prob
+    }
+  }
+  
+  
+  sigma2[i+1,]=sigma2_old
+  
+  
+}
+## Summarize beta and sigma2
 
+apply(beta, 2, mean)
+apply(beta, 2, sd)
 
 ```
+该部分参考了老师的代码，但是网上部分Gibbs抽样用于线性回归是直接给出分布进行抽样，但是分布的推导较为复杂。
 
+
+```{r}
+X=X[,-1]
+ans=lm(y~X)
+summary(ans)
+```
+和最小二乘拟合结果基本一致
+
+```{r}
+plot(1:length(beta[,1]),beta[,1])
+```
+可以看到最开始经历了一些随机游走，最终达到了目标值-3，越接近目标值，其值越难以更新。
+
+## 对于BodyFat的实际研究
+
+### 高维情况
+
+```{r}
+df=read.csv('Bodyfat.csv')
+df=as.matrix(df)
+df=df[,-1]
+y=df[,1]
+
+X=cbind(1,df[,-1])
+
+
+library(mvtnorm)
+
+nIter <- 100000
+p <- ncol(X)
+
+## Reserve space
+beta <- matrix(NA, nIter, p)
+sigma2 <- matrix(NA, nIter, 1)
+acc <- matrix(NA, nIter, 2)
+
+## Initial values
+beta[1, ] <- rnorm(p,0,9)
+sigma2[1, ] <- 0.5
+
+for (i in 1:(nIter-1)) {
+  beta_old=beta[i,]
+  sigma2_old=sigma2[i,]
+  
+  p_beta_old=LogPosterior(beta_old,sigma2_old,y,X)
+  
+  beta_prob=rmvnorm(1,matrix(beta_old,1),diag(p))
+  p_beta_prob=LogPosterior(t(beta_prob),sigma2_old,y,X)
+  
+  temp=min(exp(p_beta_prob-p_beta_old),1)
+  
+  if(!is.na(temp)){
+    if(runif(1)<temp){
+      beta_old=beta_prob
+    }
+  }
+  beta[i+1,]=beta_old
+  beta_old=matrix(beta_old)
+  
+  p_sigma2_old=LogPosterior(beta_old,sigma2_old,y,X)
+  sigma2_prob=rnorm(1,sigma2_old,1)
+  p_sigma2_prob=LogPosterior(beta_old,sigma2_prob,y,X)
+  temp=min(exp(p_sigma2_prob-p_sigma2_old),1)
+  if(!is.na(temp)){
+    if(runif(1, 0, 1)<temp){
+      sigma2_old=sigma2_prob
+    }
+  }
+  
+  
+  sigma2[i+1,]=sigma2_old
+  
+  
+}
+## Summarize beta and sigma2
+
+apply(beta, 2, mean)
+apply(beta, 2, sd)
+```
+
+```{r}
+plot(1:length(beta[,1]),beta[,1])
+```
+在迭代了10万次之后仍然没有收敛。
+
+
+```{r}
+df=read.csv('Bodyfat.csv')
+df=as.matrix(df)
+df=df[,-1]
+y=df[,1]
+X=df[,-1]
+ans=lm(y~X)
+summary(ans)
+```
+
+两者差距很大，说明该方法不太适用于高维场景（可能需要很大的迭代次数）。
+
+### 低维情况
+
+尝试缩小维度，选择3个变量作为自变量进行回归。
+```{r}
+df=read.csv('Bodyfat.csv')
+df=as.matrix(df)
+df=df[,-1]
+y=df[,1]
+
+X=cbind(1,df[,-1])
+X=X[,c(1,2,3,4)]
+
+
+
+library(mvtnorm)
+
+nIter <- 10000
+p <- ncol(X)
+
+## Reserve space
+beta <- matrix(NA, nIter, p)
+sigma2 <- matrix(NA, nIter, 1)
+acc <- matrix(NA, nIter, 2)
+
+## Initial values
+beta[1, ] <- rnorm(p,0,9)
+sigma2[1, ] <- 0.5
+
+for (i in 1:(nIter-1)) {
+  beta_old=beta[i,]
+  sigma2_old=sigma2[i,]
+  
+  p_beta_old=LogPosterior(beta_old,sigma2_old,y,X)
+  
+  beta_prob=rmvnorm(1,matrix(beta_old,1),diag(p))
+  p_beta_prob=LogPosterior(t(beta_prob),sigma2_old,y,X)
+  
+  temp=min(exp(p_beta_prob-p_beta_old),1)
+  
+  if(!is.na(temp)){
+    if(runif(1)<temp){
+      beta_old=beta_prob
+    }
+  }
+  beta[i+1,]=beta_old
+  beta_old=matrix(beta_old)
+  
+  p_sigma2_old=LogPosterior(beta_old,sigma2_old,y,X)
+  sigma2_prob=rnorm(1,sigma2_old,1)
+  p_sigma2_prob=LogPosterior(beta_old,sigma2_prob,y,X)
+  temp=min(exp(p_sigma2_prob-p_sigma2_old),1)
+  if(!is.na(temp)){
+    if(runif(1, 0, 1)<temp){
+      sigma2_old=sigma2_prob
+    }
+  }
+  
+  
+  sigma2[i+1,]=sigma2_old
+  
+  
+}
+## Summarize beta and sigma2
+
+apply(beta[2000:nrow(beta),], 2, mean)
+apply(beta[2000:nrow(beta),], 2, sd)
+```
+
+```{r}
+plot(1:length(beta[,1]),beta[,1])
+```
+
+
+```{r}
+X=X[,c(2,3,4)]
+ans=lm(y~X)
+summary(ans)
+```
+
+可以在图像中看到虽然收敛了，但是结果和最小二乘有较大差距，原因可能是由于随机游走的步长以及迭代次数较少，迭代过程中“卡住了”。尝试将初始beta值设置为接近最小二乘结果。
+
+```{r}
+df=read.csv('Bodyfat.csv')
+df=as.matrix(df)
+df=df[,-1]
+y=df[,1]
+
+X=cbind(1,df[,-1])
+X=X[,c(1,2,3,4)]
+
+
+
+library(mvtnorm)
+
+nIter <- 10000
+p <- ncol(X)
+
+## Reserve space
+beta <- matrix(NA, nIter, p)
+sigma2 <- matrix(NA, nIter, 1)
+acc <- matrix(NA, nIter, 2)
+
+## Initial values
+beta[1, ] <- c(17,0,0,-1)
+sigma2[1, ] <- 0.5
+
+for (i in 1:(nIter-1)) {
+  beta_old=beta[i,]
+  sigma2_old=sigma2[i,]
+  
+  p_beta_old=LogPosterior(beta_old,sigma2_old,y,X)
+  
+  beta_prob=rmvnorm(1,matrix(beta_old,1),diag(p))
+  p_beta_prob=LogPosterior(t(beta_prob),sigma2_old,y,X)
+  
+  temp=min(exp(p_beta_prob-p_beta_old),1)
+  
+  if(!is.na(temp)){
+    if(runif(1)<temp){
+      beta_old=beta_prob
+    }
+  }
+  beta[i+1,]=beta_old
+  beta_old=matrix(beta_old)
+  
+  p_sigma2_old=LogPosterior(beta_old,sigma2_old,y,X)
+  sigma2_prob=rnorm(1,sigma2_old,1)
+  p_sigma2_prob=LogPosterior(beta_old,sigma2_prob,y,X)
+  temp=min(exp(p_sigma2_prob-p_sigma2_old),1)
+  if(!is.na(temp)){
+    if(runif(1, 0, 1)<temp){
+      sigma2_old=sigma2_prob
+    }
+  }
+  
+  
+  sigma2[i+1,]=sigma2_old
+  
+  
+}
+## Summarize beta and sigma2
+
+apply(beta[2000:nrow(beta),], 2, mean)
+apply(beta[2000:nrow(beta),], 2, sd)
+```
+
+可以看到此时两者结果相似了，但是不完全一致，原因在于贝叶斯回归加入了先验信息会影响结果，同时在较高维度时随机游走可能由于迭代次数不足“卡住”，没有走到真正的目标值处。
+
+### 一元回归
+
+尝试用weight来预测bodyfat
+
+```{r}
+df=read.csv('Bodyfat.csv')
+df=as.matrix(df)
+df=df[,-1]
+y=df[,1]
+
+X=cbind(1,df[,-1])
+X=X[,c(1,3)]
+
+
+
+library(mvtnorm)
+
+nIter <- 10000
+p <- ncol(X)
+
+## Reserve space
+beta <- matrix(NA, nIter, p)
+sigma2 <- matrix(NA, nIter, 1)
+acc <- matrix(NA, nIter, 2)
+
+## Initial values
+beta[1, ] <- c(-10,0)
+sigma2[1, ] <- 0.5
+
+
+for (i in 1:(nIter-1)) {
+  beta_old=beta[i,]
+  sigma2_old=sigma2[i,]
+  
+  p_beta_old=LogPosterior(beta_old,sigma2_old,y,X)
+  
+  beta_prob=rmvnorm(1,matrix(beta_old,1),diag(p))
+  p_beta_prob=LogPosterior(t(beta_prob),sigma2_old,y,X)
+  
+  temp=min(exp(p_beta_prob-p_beta_old),1)
+  
+  if(!is.na(temp)){
+    if(runif(1)<temp){
+      beta_old=beta_prob
+    }
+  }
+  beta[i+1,]=beta_old
+  beta_old=matrix(beta_old)
+  
+  p_sigma2_old=LogPosterior(beta_old,sigma2_old,y,X)
+  sigma2_prob=rnorm(1,sigma2_old,1)
+  p_sigma2_prob=LogPosterior(beta_old,sigma2_prob,y,X)
+  temp=min(exp(p_sigma2_prob-p_sigma2_old),1)
+  if(!is.na(temp)){
+    if(runif(1, 0, 1)<temp){
+      sigma2_old=sigma2_prob
+    }
+  }
+  
+  
+  sigma2[i+1,]=sigma2_old
+  
+  
+}
+## Summarize beta and sigma2
+
+(b=apply(beta[2000:nrow(beta),], 2, mean))
+(s=apply(beta[2000:nrow(beta),], 2, sd))
+```
+
+```{r}
+x=X[,2]
+ans=lm(y~x)
+summary(ans)
+```
+
+先验分布对贝叶斯回归结果产生了较大影响。
+
+```{r}
+library(ggplot2)
+line_x=100:400
+line_y1=line_x*0.17439-12.05158
+line_y2=b[1]+b[2]*line_x
+p=ggplot()+geom_point(aes(x,y))+
+  geom_line(aes(line_x,line_y1),color='red')+
+  geom_line(aes(line_x,line_y2),color='blue')
+  
+p
+```
+
+尝试更改先验分布
+
+```{r}
+
+df=read.csv('Bodyfat.csv')
+df=as.matrix(df)
+df=df[,-1]
+y=df[,1]
+
+X=cbind(1,df[,-1])
+X=X[,c(1,3)]
+
+
+
+library(mvtnorm)
+
+nIter <- 10000
+p <- ncol(X)
+
+## Reserve space
+beta <- matrix(NA, nIter, p)
+sigma2 <- matrix(NA, nIter, 1)
+acc <- matrix(NA, nIter, 2)
+
+## Initial values
+beta[1, ] <- c(-10,0)
+sigma2[1, ] <- 0.5
+
+LogPosterior <- function(beta, sigma2, y, X) {
+  p <- length(beta)
+  ## The log likelihood function
+  LogLikelihood <- sum(dnorm(x = y, mean = X %*% beta, sd = sqrt(sigma2), log = TRUE))
+  ## The priors
+  LogPrior4beta <- dmvnorm(x = t(beta), mean = matrix(c(-13,0), 1, p), sigma = diag(p), log = TRUE)
+  LogPrior4sigma2 <- dchisq(x = sigma2, df = 10, log = TRUE)
+  LogPrior <- LogPrior4beta + LogPrior4sigma2
+  ## The log posterior
+  LogPosterior <- LogLikelihood + LogPrior
+  return(LogPosterior)
+}
+
+for (i in 1:(nIter-1)) {
+  beta_old=beta[i,]
+  sigma2_old=sigma2[i,]
+  
+  p_beta_old=LogPosterior(beta_old,sigma2_old,y,X)
+  
+  beta_prob=rmvnorm(1,matrix(beta_old,1),diag(p))
+  p_beta_prob=LogPosterior(t(beta_prob),sigma2_old,y,X)
+  
+  temp=min(exp(p_beta_prob-p_beta_old),1)
+  
+  if(!is.na(temp)){
+    if(runif(1)<temp){
+      beta_old=beta_prob
+    }
+  }
+  beta[i+1,]=beta_old
+  beta_old=matrix(beta_old)
+  
+  p_sigma2_old=LogPosterior(beta_old,sigma2_old,y,X)
+  sigma2_prob=rnorm(1,sigma2_old,1)
+  p_sigma2_prob=LogPosterior(beta_old,sigma2_prob,y,X)
+  temp=min(exp(p_sigma2_prob-p_sigma2_old),1)
+  if(!is.na(temp)){
+    if(runif(1, 0, 1)<temp){
+      sigma2_old=sigma2_prob
+    }
+  }
+  
+  
+  sigma2[i+1,]=sigma2_old
+  
+  
+}
+## Summarize beta and sigma2
+
+(b=apply(beta[2000:nrow(beta),], 2, mean))
+(s=apply(beta[2000:nrow(beta),], 2, sd))
+```
+
+得到结果与最小二乘基本一致。
+
+```{r}
+library(ggplot2)
+line_x=100:400
+line_y1=line_x*0.17439-12.05158
+line_y2=b[1]+b[2]*line_x
+p=ggplot()+geom_point(aes(x,y))+
+  geom_line(aes(line_x,line_y1),color='red')+
+  geom_line(aes(line_x,line_y2),color='blue')
+  
+p
+```
