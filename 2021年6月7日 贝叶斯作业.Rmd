@@ -1,8 +1,13 @@
 ---
 title: "2021年6月7日 贝叶斯作业"
-author: "tassadar667"
-date: "2021/6/7"
-output: html_document
+author:
+  - tassadar667
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+geometry: "left=2.5cm,right=2cm,top=3cm,bottom=2.5cm"
 ---
 
 ```{r setup, include=FALSE}
@@ -16,12 +21,18 @@ X=df[,c(-1,-2)]
 X=as.matrix(X)
 ans=lm(Y~X)
 print(summary(ans))
-X=cbind(1,X)
-ans=qr(X)
-Q=qr.Q(ans)
-R=qr.R(ans)
-(w=solve(R)%*%t(Q)%*%Y)
 
+lm1=function(X,Y){
+  X=cbind(1,X)
+  ans=qr(X)
+  Q=qr.Q(ans)
+  R=qr.R(ans)
+  w=solve(R)%*%t(Q)%*%Y
+  print(w)
+}
+
+lm1(X,Y)
 
 ```
 
+可以看到两者结果相同。
